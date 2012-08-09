@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src='js/jquery-1.7.2.js'></script>
+        <script src='js/sha1.js'></script>
+        <script src='js/bencode.js'></script>
+        <script>
+            $(document).ready(function(){
+
+                var dragEnter, dragExit, dragOver;
+                dragEnter = dragExit = dragOver = function(e) {
+                    console.log('.');
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+
+                function drop(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                     
+                    var files = e.dataTransfer.files;
+                    var count = files.length;
+
+                    console.log(count + ' files dropped');
+
+                    var file = files[0];
+                     
+                    var handleReaderLoad = function(e) {
+                        var piece_length = 262144;
+                        var torrentFile = {
+                            announce: 'http://localhost',
+                            info: {
+                                name: file.name,
+                                length: file.size,
+                                pieces: CryptoJS.SHA1(e.target.result).toString(CryptoJS.enc.Latin1)
+                            }
+                        }
+                        torrentFile.info['piece length'] = piece_length;
+
+                        $('#dropbox').text(Bencode.stringify(torrentFile))
+                    }
+
+                    var reader = new FileReader();
+                     
+                    // init the reader event handlers
+                    reader.onload = handleReaderLoad;
+                     
+                    // begin the read operation
+                    reader.readAsBinaryString(file);
+                }
+
+                var dropbox = document.getElementById("dropbox")
+                 
+                // init event handlers
+                dropbox.addEventListener("dragenter", dragEnter, false);
+                dropbox.addEventListener("dragexit", dragExit, false);
+                dropbox.addEventListener("dragover", dragOver, false);
+                dropbox.addEventListener("drop", drop, false);
+
+
+
+            });
+        </script>
+        <style>
+            #dropbox {
+                width: 425px;
+                height: 300px;
+                border: 2px solid #DDD;
+                -moz-border-radius: 8px;
+                -webkit-border-radius: 8px;
+                border-radius: 8px;
+                background-color: #FEFFEC;
+                text-align: center;
+                color: #BBB;
+                font-size: 2em;
+                font-family: Arial, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <div id='dropbox'></div>
+    </body>
+</html>
