@@ -1,0 +1,10 @@
+{
+  "name": "cloaked-nemesis",
+  "description": "Nobody knows...",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "node-static": "0.6.0",
+    "bencode": "0.3.0"
+  }
+}

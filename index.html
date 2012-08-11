@@ -3,10 +3,11 @@
     <head>
         <script src='js/jquery-1.7.2.js'></script>
         <script src='js/sha1.js'></script>
+        <script src='js/enc-base64.js'></script>
+        <script src='js/digest.js'></script>
         <script src='js/bencode.js'></script>
         <script>
             $(document).ready(function(){
-
                 var dragEnter, dragExit, dragOver;
                 dragEnter = dragExit = dragOver = function(e) {
                     console.log('.');
@@ -27,17 +28,24 @@
                      
                     var handleReaderLoad = function(e) {
                         var piece_length = 262144;
+                        var dg = new Digest.SHA1();
                         var torrentFile = {
                             announce: 'http://localhost',
-                            info: {
-                                name: file.name,
-                                length: file.size,
-                                pieces: CryptoJS.SHA1(e.target.result).toString(CryptoJS.enc.Latin1)
-                            }
+                            name: file.name,
+                            length: file.size,
+                            pieces: btoa(String.fromCharCode.apply(null, new Uint8Array(dg.digest(e.target.result))))
                         }
-                        torrentFile.info['piece length'] = piece_length;
 
-                        $('#dropbox').text(Bencode.stringify(torrentFile))
+                        torrentFile['piece length'] = piece_length;
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '/app/createTorrent',
+                            data: torrentFile,
+                            success: function(result) {
+                                console.log('yay');
+                            }
+                        });
                     }
 
                     var reader = new FileReader();
@@ -46,7 +54,7 @@
                     reader.onload = handleReaderLoad;
                      
                     // begin the read operation
-                    reader.readAsBinaryString(file);
+                    reader.readAsArrayBuffer(file);
                 }
 
                 var dropbox = document.getElementById("dropbox")
